@@ -16,7 +16,7 @@ class CreatePajakTable extends Migration
         Schema::create('pajak', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('item_id');
-            $table->foreign('item_id')->references('id')->on('item')->onUpdate('cascade');
+            $table->foreign('item_id')->references('id')->on('item')->onUpdate('cascade')->onDelete('cascade');
             $table->string('nama');
             $table->decimal('rate');
             $table->timestamps();

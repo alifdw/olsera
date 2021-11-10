@@ -40,7 +40,7 @@ class PajakController extends Controller
     {
         
         $validator = Validator::make($request->all(), [
-            'item_id' => 'required|numeric:|exists:item,id',
+            'item_id' => 'required|numeric|exists:item,id',
             'nama' => 'required|max:255',
             'rate' => 'required|numeric|between:0,99.99',
         ]);

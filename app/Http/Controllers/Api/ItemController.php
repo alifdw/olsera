@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Models\Item;
+use App\Models\Pajak;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
@@ -43,8 +44,13 @@ class ItemController extends Controller
      */
     public function store(Request $request)
     {
+        $jumlah_pajak = count($request->pajak);
         $validator = Validator::make($request->all(), [
             'nama' => 'required|max:255',
+            'pajak' => 'required|array|min:2',
+            'pajak.*' => 'required|string|distinct|min:2',
+            'rate' => 'required|array|min:2|size:'.$jumlah_pajak,
+            'rate.*' => 'required|numeric',
         ]);
 
         if ($validator->fails()) {
@@ -54,7 +60,16 @@ class ItemController extends Controller
         $data = [
             'nama'  => $request->nama,
         ];
-        return res(200, 'success', 'berhasil di simpan', Item::create($data));
+        $item  = Item::create($data);
+        foreach($request->pajak as $key => $pajak){
+            $data = [
+                'item_id'   => $item->id,
+                'nama'      => $pajak,
+                'rate'      => $request->rate[$key]
+            ];
+            Pajak::create($data);
+        }
+        return res(200, 'success', 'berhasil di simpan', true);
     }
 
     /**
@@ -99,8 +114,13 @@ class ItemController extends Controller
      */
     public function update(Request $request, $id)
     {
+        $jumlah_pajak = count($request->pajak);
         $validator = Validator::make($request->all(), [
             'nama' => 'required|max:255',
+            'pajak' => 'required|array|min:2',
+            'pajak.*' => 'required|string|distinct|min:2',
+            'rate' => 'required|array|min:2|size:'.$jumlah_pajak,
+            'rate.*' => 'required|numeric',
         ]);
 
         if ($validator->fails()) {
@@ -113,8 +133,18 @@ class ItemController extends Controller
             $data = [
                 'nama'  => $request->nama,
             ];
+            $item->update($data);
+            Pajak::whereItemId($id)->delete();
+            foreach($request->pajak as $key => $pajak){
+                $data = [
+                    'item_id'   => $id,
+                    'nama'      => $pajak,
+                    'rate'      => $request->rate[$key]
+                ];
+                Pajak::create($data);
+            }
             
-            return res(200, 'success', 'berhasil di simpan', $item->update($data));
+            return res(200, 'success', 'berhasil di simpan', true);
         }else{
             return res(405, 'error', ['Item' => ['Item tidak di temukan']]);
         }
