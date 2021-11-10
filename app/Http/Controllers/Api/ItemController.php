@@ -16,10 +16,8 @@ class ItemController extends Controller
      */
     public function index()
     {
-        // $item = Item::each(function($q){
-        //     $q->pajak = 'asdasd';
-        // });
-        $item = Item::
+        $item = Item::with('pajak:item_id,nama,rate')
+        ->get(['id', 'nama']);
         return res(200, 'success', '', $item);
     }
 
@@ -63,7 +61,8 @@ class ItemController extends Controller
      */
     public function show($id)
     {
-        $item = Item::find($id)->with('pajak');
+        $item = Item::whereId($id)->with('pajak:item_id,nama,rate')
+        ->get(['id', 'nama']);
 
         if($item){
             return res(200, 'success', '', $item);
