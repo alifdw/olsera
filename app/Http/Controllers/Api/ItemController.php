@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Models\Item;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Validator;
 
@@ -16,8 +17,11 @@ class ItemController extends Controller
      */
     public function index()
     {
-        $item = Item::with('pajak:item_id,nama,rate')
-        ->get(['id', 'nama']);
+        $item = DB::select("SELECT item.`id`, item.`nama`, 
+                            GROUP_CONCAT(JSON_OBJECT('id', pajak.`id`, 'nama', pajak.`nama`, 'rate', pajak.`rate`))AS pajak 
+                            FROM item 
+                            JOIN pajak ON item.`id` = pajak.`item_id`
+                            GROUP BY item.`id`, item.`nama`");
         return res(200, 'success', '', $item);
     }
 
@@ -61,8 +65,12 @@ class ItemController extends Controller
      */
     public function show($id)
     {
-        $item = Item::whereId($id)->with('pajak:item_id,nama,rate')
-        ->get(['id', 'nama']);
+        $item = DB::select("SELECT item.`id`, item.`nama`, 
+                            GROUP_CONCAT(JSON_OBJECT('id', pajak.`id`, 'nama', pajak.`nama`, 'rate', pajak.`rate`))AS pajak 
+                            FROM item 
+                            JOIN pajak ON item.`id` = pajak.`item_id`
+                            WHERE item.`id` = ".$id."
+                            GROUP BY item.`id`, item.`nama`");
 
         if($item){
             return res(200, 'success', '', $item);
