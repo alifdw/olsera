@@ -60,15 +60,16 @@ class ItemController extends Controller
         $data = [
             'nama'  => $request->nama,
         ];
-        $item  = Item::create($data);
-        foreach($request->pajak as $key => $pajak){
-            $data = [
-                'item_id'   => $item->id,
-                'nama'      => $pajak,
+        
+        foreach($request->pajak as $key => $item_pajak){
+            $pajak[] = new Pajak([
+                'nama'      => $item_pajak,
                 'rate'      => $request->rate[$key]
-            ];
-            Pajak::create($data);
+            ]);
         }
+        $item = Item::create($data);
+        $item->pajak()->saveMany($pajak);
+
         return res(200, 'success', 'berhasil di simpan', true);
     }
 
@@ -133,17 +134,18 @@ class ItemController extends Controller
             $data = [
                 'nama'  => $request->nama,
             ];
-            $item->update($data);
-            Pajak::whereItemId($id)->delete();
-            foreach($request->pajak as $key => $pajak){
-                $data = [
-                    'item_id'   => $id,
-                    'nama'      => $pajak,
+
+            foreach($request->pajak as $key => $item_pajak){
+                $pajak[] = new Pajak([
+                    'nama'      => $item_pajak,
                     'rate'      => $request->rate[$key]
-                ];
-                Pajak::create($data);
+                ]);
             }
             
+            $item->update($data);
+            $item->pajak()->delete(); 
+            $item->pajak()->saveMany($pajak);
+
             return res(200, 'success', 'berhasil di simpan', true);
         }else{
             return res(405, 'error', ['Item' => ['Item tidak di temukan']]);

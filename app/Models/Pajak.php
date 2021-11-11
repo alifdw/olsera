@@ -10,4 +10,10 @@ class Pajak extends Model
     protected $table = 'pajak';
     protected $guarded = [];
     use HasFactory;
+
+    
+    public function item()
+    {
+        return $this->belongsTo(Item::class);
+    }
 }
